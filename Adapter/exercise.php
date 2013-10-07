@@ -47,12 +47,34 @@ namespace MyCompanyShop {
 
     class CrediCardAdapter implements PaymentAdapterInterface
     {
+        private $cc;
 
+        public function __construct(CreditCard$cc)
+        {
+            $this->cc= $cc;
+        }
+
+        public function collectMoney($amount)
+        {
+            $result = $this->cc->authorizeTransaction($amount);
+            return preg_match('/Authorization code: [0-9a-f]+/', $result);
+        }
     }
 
     class PayPalAdapter implements PaymentAdapterInterface
     {
+        private $paypal;
 
+        public function __construct(PayPal $paypal)
+        {
+            $this->paypal = $paypal;
+        }
+
+        public function collectMoney($amount)
+        {
+            $result = $this->paypal->transfer('me@me.com', $amount);
+            return $result === 'Paypal Success!';
+        }
     }
 }
 
