@@ -20,8 +20,7 @@ namespace MyCompanyShop {
          * @return ProductCollection
          */
         public function filter(ProductFilteringStrategy $filterStrategy) {
-            $filteredProducts = array();
-            //@TODO use the strategy to filter products that don't meet criteria
+            $filteredProducts = array_values(array_filter($this->products, array($filterStrategy, 'filter')));
             return new ProductCollection($filteredProducts);
         }
 
@@ -38,15 +37,41 @@ namespace MyCompanyShop {
         public function filter(Product $product);
     }
 
-    //@TODO implement a strategy for filtering products by maximum price
-    //@TODO implement a strategy for filtering products by manufacturer
+    class ManufacturerFilter implements ProductFilteringStrategy {
+        private $_manufacturer;
 
+        public function __construct($manufacturer)
+        {
+            $this->_manufacturer = $manufacturer;
+        }
+
+        public function filter(Product $product)
+        {
+            return $product->manufacturer === $this->_manufacturer;
+        }
+    }
+
+    class MaxPriceFilter implements ProductFilteringStrategy {
+        private $_maxPrice;
+
+        public function __construct($maxPrice)
+        {
+            $this->_maxPrice = $maxPrice;
+        }
+
+        public function filter(Product $product)
+        {
+            return isset($product->sellingPrice) && $product->sellingPrice <= $this->_maxPrice;
+        }
+    }
 }
 
 namespace {
 
     use MyCompanyShop\Product;
     use MyCompanyShop\ProductCollection;
+    use MyCompanyShop\MaxPriceFilter;
+    use MyCompanyShop\ManufacturerFilter;
 
     $p1 = new Product;
     $p1->listPrice = 100;
@@ -62,7 +87,7 @@ namespace {
     $resultCollection = $collection->filter(new ManufacturerFilter('Widgetron, LLC'));
 
     assert(count($resultCollection->getProductsArray()) == 1);
-    assert($resultCollection->getProductsArray()[0]->manufacturer == 'WidgetCorp');
+    assert($resultCollection->getProductsArray()[0]->manufacturer == 'Widgetron, LLC');
 
 
     $resultCollection = $collection->filter(new MaxPriceFilter(50));
