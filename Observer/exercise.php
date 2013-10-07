@@ -7,6 +7,7 @@ namespace MyCompanyShop {
     class Product implements SplSubject
     {
         private $data = [];
+        private $observers = [];
 
         public function __get($key)
         {
@@ -16,21 +17,24 @@ namespace MyCompanyShop {
         public function __set($key, $value)
         {
             $this->data[$key] = $value;
+            $this->notify();
         }
 
         public function attach(SplObserver $observer)
         {
-            // TODO: Implement attach() method.
+            $this->observers[] = $observer;
         }
 
         public function detach(SplObserver $observer)
         {
-            // TODO: Implement detach() method.
+            $this->observers = array_filter($this->observers, function($obs) use ($observer) { return $obs !== $observer; });
         }
 
         public function notify()
         {
-            // TODO: Implement notify() method.
+            foreach ($this->observers as $observer) {
+                $observer->update($this);
+            }
         }
 
 
@@ -47,7 +51,7 @@ namespace MyCompanyShop {
 
          function update(SplSubject $subject)
         {
-            // TODO: Implement update() method.
+            $this->events[] = $subject;
         }
 
 
